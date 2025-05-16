@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+  previewFeatures = ["clientExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 队伍模型
+model Team {
+  id              Int       @id
+  name            String    // 队伍名称
+  tokenURI        String    // 队伍NFT URI
+  captainAddress  String    @unique // Add unique constraint for captain
+  members         Member[]  
+  createdAt       DateTime  @default(now())
+  joinRequests    TeamJoinRequest[]
+
+  @@index([captainAddress]) // Add index for faster captain lookups
+}
+
+// 成员模型
+model Member {
+  id        Int      @id
+  name      String   // 成员名称
+  tokenURI  String   // 成员NFT URI
+  address   String   @unique // Add unique constraint for member address
+  role      Int      // 成员角色
+  team      Team     @relation(fields: [teamId], references: [id])
+  teamId    Int      // 所属队伍ID
+  createdAt DateTime @default(now())
+
+  @@index([address]) // Add index for faster member lookups
+  @@index([teamId])  // Add index for faster team lookups
+}
+
+// 申请状态枚举
+enum RequestStatus {
+  PENDING   // 等待中
+  APPROVED  // 已通过
+  REJECTED  // 已拒绝
+}
+
+// 入队申请模型
+model TeamJoinRequest {
+  id          Int           @id @default(autoincrement())
+  applicant   String        // 申请人地址
+  teamId      Int          
+  team        Team          @relation(fields: [teamId], references: [id])
+  name        String        // 申请人想使用的名称
+  role        Int          // 申请的角色
+  status      RequestStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([applicant])
+  @@index([teamId])
+  @@index([status])
+}
+
