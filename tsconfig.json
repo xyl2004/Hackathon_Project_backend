@@ -13,6 +13,6 @@
     "outDir": "dist",
     "rootDir": "src"
   },
-  "include": ["src/**/*", "../Project_frontend/src/services/contractUtils.ts"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }
